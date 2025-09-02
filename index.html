@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>関西弁アクセント辞書</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>関西弁アクセント辞書</h1>
+            <p>単語を入力して関西弁のアクセントを調べよう！</p>
+        </header>
+
+        <main>
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="wordInput" placeholder="単語を入力してください（例：こんにちは）" autocomplete="off">
+                    <button id="searchBtn">検索</button>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="word-display">
+                    <h2 id="searchedWord"></h2>
+                    <div class="accent-info">
+                        <div class="accent-pattern">
+                            <h3>関西弁アクセント</h3>
+                            <div id="accentPattern" class="accent-display"></div>
+                        </div>
+                        <div class="pronunciation">
+                            <h3>発音</h3>
+                            <div id="pronunciation" class="pronunciation-display"></div>
+                        </div>
+                        <div class="example">
+                            <h3>使用例</h3>
+                            <div id="example" class="example-display"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-result" id="noResult" style="display: none;">
+                <p>申し訳ございません。該当する単語が見つかりませんでした。</p>
+                <p>別の単語を試してみてください。</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
