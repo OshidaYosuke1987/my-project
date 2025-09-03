@@ -1,72 +1,16 @@
-const dictionary = {
-    'こんにちは': {
-        accent: 'こ↗んに↘ちは',
-        pronunciation: 'コ↗ンニ↘チハ',
-        example: '「こ↗んに↘ちは、元気でっか？」'
-    },
-    'ありがとう': {
-        accent: 'あ↗りが↘とう',
-        pronunciation: 'ア↗リガ↘トウ',
-        example: '「あ↗りが↘とう、おおきに！」'
-    },
-    'おいしい': {
-        accent: 'お↗いし↘い',
-        pronunciation: 'オ↗イシ↘イ',
-        example: '「この料理、めっちゃお↗いし↘いわ〜」'
-    },
-    'きれい': {
-        accent: 'き↗れ↘い',
-        pronunciation: 'キ↗レ↘イ',
-        example: '「あの子、ほんまき↗れ↘いやなあ」'
-    },
-    'おもしろい': {
-        accent: 'お↗もしろ↘い',
-        pronunciation: 'オ↗モシロ↘イ',
-        example: '「あの映画、めっちゃお↗もしろ↘かったで〜」'
-    },
-    'すごい': {
-        accent: 'す↗ご↘い',
-        pronunciation: 'ス↗ゴ↘イ',
-        example: '「君、ほんます↗ご↘いなあ！」'
-    },
-    'わからない': {
-        accent: 'わ↗から↘ない',
-        pronunciation: 'ワ↗カラ↘ナイ',
-        example: '「それ、ようわ↗から↘んわ〜」'
-    },
-    'だいじょうぶ': {
-        accent: 'だい↗じょう↘ぶ',
-        pronunciation: 'ダイ↗ジョウ↘ブ',
-        example: '「だい↗じょう↘ぶやで、心配せんでええよ」'
-    },
-    'やばい': {
-        accent: 'や↗ば↘い',
-        pronunciation: 'ヤ↗バ↘イ',
-        example: '「時間、や↗ば↘いんちゃう？」'
-    },
-    'かわいい': {
-        accent: 'か↗わい↘い',
-        pronunciation: 'カ↗ワイ↘イ',
-        example: '「あの犬、めっちゃか↗わい↘いやん！」'
-    },
-    'たのしい': {
-        accent: 'た↗のし↘い',
-        pronunciation: 'タ↗ノシ↘イ',
-        example: '「今日は、ほんまた↗のし↘かったわ〜」'
-    },
-    'つまらない': {
-        accent: 'つ↗まら↘ない',
-        pronunciation: 'ツ↗マラ↘ナイ',
-        example: '「この番組、つ↗まら↘んなあ」'
-    },
-    'おおきに': {
-        accent: 'お↗おき↘に',
-        pronunciation: 'オ↗オキ↘ニ',
-        example: '「おおきに、助かったわ〜」'
-    }
-};
+let dictionary = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+async function loadDictionary() {
+    try {
+        const response = await fetch('dictionary.json');
+        dictionary = await response.json();
+    } catch (error) {
+        console.error('辞書の読み込みに失敗しました:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadDictionary();
     const wordInput = document.getElementById('wordInput');
     const searchBtn = document.getElementById('searchBtn');
     const resultSection = document.getElementById('resultSection');
