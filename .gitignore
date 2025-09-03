@@ -1,0 +1,4 @@
+node_modules/
+dictionary.db
+npm-debug.log
+.env

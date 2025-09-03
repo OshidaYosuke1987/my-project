@@ -2,10 +2,33 @@ let dictionary = {};
 
 async function loadDictionary() {
     try {
-        const response = await fetch('dictionary.json');
-        dictionary = await response.json();
+        // Try API first, fallback to JSON file for backwards compatibility
+        const response = await fetch('/api/words');
+        if (response.ok) {
+            const wordsArray = await response.json();
+            // Convert array to dictionary format
+            dictionary = {};
+            wordsArray.forEach(word => {
+                dictionary[word.word] = {
+                    accent: word.accent,
+                    pronunciation: word.pronunciation,
+                    example: word.example
+                };
+            });
+        } else {
+            // Fallback to JSON file
+            const jsonResponse = await fetch('dictionary.json');
+            dictionary = await jsonResponse.json();
+        }
     } catch (error) {
         console.error('辞書の読み込みに失敗しました:', error);
+        // Try fallback to JSON file
+        try {
+            const jsonResponse = await fetch('dictionary.json');
+            dictionary = await jsonResponse.json();
+        } catch (fallbackError) {
+            console.error('JSONファイルの読み込みも失敗しました:', fallbackError);
+        }
     }
 }
 
