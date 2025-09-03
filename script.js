@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadDictionary();
     const wordInput = document.getElementById('wordInput');
     const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const resultSection = document.getElementById('resultSection');
     const noResult = document.getElementById('noResult');
     const searchedWord = document.getElementById('searchedWord');
@@ -57,7 +58,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                         .replace(/↘/g, '<span class="accent-down">↘</span>');
     }
 
+    function clearSearch() {
+        wordInput.value = '';
+        resultSection.style.display = 'none';
+        noResult.style.display = 'none';
+        wordInput.focus();
+    }
+
     searchBtn.addEventListener('click', searchWord);
+    clearBtn.addEventListener('click', clearSearch);
     
     wordInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
