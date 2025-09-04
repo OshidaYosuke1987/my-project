@@ -43,6 +43,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     const accentPattern = document.getElementById('accentPattern');
     const pronunciation = document.getElementById('pronunciation');
     const example = document.getElementById('example');
+    
+    // Tab elements
+    const searchTab = document.getElementById('searchTab');
+    const registerTab = document.getElementById('registerTab');
+    const searchSection = document.getElementById('searchSection');
+    const registerSection = document.getElementById('registerSection');
+    
+    // Registration form elements
+    const newWord = document.getElementById('newWord');
+    const newAccent = document.getElementById('newAccent');
+    const newPronunciation = document.getElementById('newPronunciation');
+    const newExample = document.getElementById('newExample');
+    const registerBtn = document.getElementById('registerBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
 
     function searchWord() {
         const word = wordInput.value.trim();
@@ -88,6 +102,77 @@ document.addEventListener('DOMContentLoaded', async function() {
         wordInput.focus();
     }
 
+    function switchTab(activeTab, activeSection, inactiveTab, inactiveSection) {
+        activeTab.classList.add('active');
+        inactiveTab.classList.remove('active');
+        activeSection.style.display = 'block';
+        inactiveSection.style.display = 'none';
+        
+        // Clear results when switching tabs
+        resultSection.style.display = 'none';
+        noResult.style.display = 'none';
+    }
+
+    async function registerWord() {
+        const word = newWord.value.trim();
+        const accent = newAccent.value.trim();
+        const pronunciationValue = newPronunciation.value.trim();
+        const exampleValue = newExample.value.trim();
+
+        if (!word || !accent || !pronunciationValue || !exampleValue) {
+            alert('すべての項目を入力してください。');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/words', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    word: word,
+                    accent: accent,
+                    pronunciation: pronunciationValue,
+                    example: exampleValue
+                }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(`単語「${word}」を登録しました。`);
+                clearRegistrationForm();
+                
+                // Reload dictionary to include new word
+                await loadDictionary();
+            } else {
+                const error = await response.json();
+                alert(`登録に失敗しました: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('登録中にエラーが発生しました。');
+        }
+    }
+
+    function clearRegistrationForm() {
+        newWord.value = '';
+        newAccent.value = '';
+        newPronunciation.value = '';
+        newExample.value = '';
+        newWord.focus();
+    }
+
+    // Tab event listeners
+    searchTab.addEventListener('click', () => {
+        switchTab(searchTab, searchSection, registerTab, registerSection);
+    });
+
+    registerTab.addEventListener('click', () => {
+        switchTab(registerTab, registerSection, searchTab, searchSection);
+    });
+
+    // Search functionality event listeners
     searchBtn.addEventListener('click', searchWord);
     clearBtn.addEventListener('click', clearSearch);
     
@@ -101,6 +186,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!this.value.trim()) {
             resultSection.style.display = 'none';
             noResult.style.display = 'none';
+        }
+    });
+
+    // Registration functionality event listeners
+    registerBtn.addEventListener('click', registerWord);
+    clearFormBtn.addEventListener('click', clearRegistrationForm);
+
+    newExample.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            registerWord();
         }
     });
 });
