@@ -1,4 +1,5 @@
 let dictionary = {};
+let currentWordId = null;
 
 async function loadDictionary() {
     try {
@@ -10,6 +11,7 @@ async function loadDictionary() {
             dictionary = {};
             wordsArray.forEach(word => {
                 dictionary[word.word] = {
+                    id: word.id,
                     accent: word.accent,
                     pronunciation: word.pronunciation,
                     example: word.example
@@ -43,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const accentPattern = document.getElementById('accentPattern');
     const pronunciation = document.getElementById('pronunciation');
     const example = document.getElementById('example');
+    const deleteBtn = document.getElementById('deleteBtn');
     
     // Tab elements
     const searchTab = document.getElementById('searchTab');
@@ -80,7 +83,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         accentPattern.innerHTML = createAccentDisplay(result.accent);
         pronunciation.textContent = result.pronunciation;
         example.textContent = result.example;
-        
+
+        // Store the current word ID for deletion
+        currentWordId = result.id;
+        deleteBtn.style.display = result.id ? 'inline-block' : 'none';
+
         resultSection.style.display = 'block';
         noResult.style.display = 'none';
     }
@@ -99,6 +106,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         wordInput.value = '';
         resultSection.style.display = 'none';
         noResult.style.display = 'none';
+        deleteBtn.style.display = 'none';
+        currentWordId = null;
         wordInput.focus();
     }
 
@@ -163,6 +172,37 @@ document.addEventListener('DOMContentLoaded', async function() {
         newWord.focus();
     }
 
+    async function deleteWord() {
+        if (!currentWordId) {
+            alert('削除する単語が選択されていません。');
+            return;
+        }
+
+        const wordToDelete = searchedWord.textContent;
+        if (!confirm(`本当に「${wordToDelete}」を削除しますか？\nこの操作は取り消すことができません。`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/words/${currentWordId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert(`単語「${wordToDelete}」を削除しました。`);
+                clearSearch();
+                // Reload dictionary to remove deleted word
+                await loadDictionary();
+            } else {
+                const error = await response.json();
+                alert(`削除に失敗しました: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('削除中にエラーが発生しました。');
+        }
+    }
+
     // Tab event listeners
     searchTab.addEventListener('click', () => {
         switchTab(searchTab, searchSection, registerTab, registerSection);
@@ -192,6 +232,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Registration functionality event listeners
     registerBtn.addEventListener('click', registerWord);
     clearFormBtn.addEventListener('click', clearRegistrationForm);
+    deleteBtn.addEventListener('click', deleteWord);
 
     newExample.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && e.ctrlKey) {
