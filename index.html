@@ -17,6 +17,7 @@
             <div class="tabs">
                 <button id="searchTab" class="tab active">検索</button>
                 <button id="registerTab" class="tab">単語登録</button>
+                <button id="adminTab" class="tab">管理</button>
             </div>
 
             <div id="searchSection" class="section">
@@ -51,6 +52,47 @@
                         <div class="form-actions">
                             <button id="registerBtn" class="register-btn">登録</button>
                             <button id="clearFormBtn" class="clear-btn">クリア</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminSection" class="section" style="display: none;">
+                <div class="admin-section">
+                    <div id="loginForm" class="login-form" style="display: block;">
+                        <h3>🔐 管理者ログイン</h3>
+                        <div class="test-credentials">
+                            <h4>テスト用アカウント</h4>
+                            <p><strong>ユーザー名:</strong> admin</p>
+                            <p><strong>パスワード:</strong> secret</p>
+                            <button id="quickLoginBtn" class="quick-login-btn">クイックログイン</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminUsername">ユーザー名</label>
+                            <input type="text" id="adminUsername" placeholder="admin" value="admin" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminPassword">パスワード</label>
+                            <input type="password" id="adminPassword" placeholder="secret" required>
+                        </div>
+                        <div class="form-actions">
+                            <button id="loginBtn" class="login-btn">ログイン</button>
+                        </div>
+                        <div class="login-help">
+                            <p><small>💡 上記のテストアカウントでログインしてください</small></p>
+                        </div>
+                    </div>
+
+                    <div id="adminPanel" class="admin-panel" style="display: none;">
+                        <div class="admin-header">
+                            <h3>管理者パネル</h3>
+                            <p>こんにちは、<span id="adminUser"></span>さん</p>
+                            <button id="logoutBtn" class="logout-btn">ログアウト</button>
+                        </div>
+                        <div class="admin-info">
+                            <p>✅ 管理者としてログインしています</p>
+                            <p>📝 単語の登録・削除が可能です</p>
+                            <p>🔒 ログアウト後は通常ユーザーモードに戻ります</p>
                         </div>
                     </div>
                 </div>

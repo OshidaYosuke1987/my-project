@@ -1,5 +1,6 @@
 let dictionary = {};
 let currentWordId = null;
+let isAuthenticated = false;
 
 async function loadDictionary() {
     try {
@@ -34,8 +35,48 @@ async function loadDictionary() {
     }
 }
 
+// Check authentication status
+async function checkAuthStatus() {
+    try {
+        const response = await fetch('/api/auth/status');
+        const data = await response.json();
+        isAuthenticated = data.isAuthenticated;
+        updateUIBasedOnAuth(data);
+        return data;
+    } catch (error) {
+        console.error('Auth check error:', error);
+        isAuthenticated = false;
+        return { isAuthenticated: false };
+    }
+}
+
+// Update UI based on authentication status
+function updateUIBasedOnAuth(authData) {
+    const loginForm = document.getElementById('loginForm');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminUser = document.getElementById('adminUser');
+    const registerBtn = document.getElementById('registerBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    if (authData.isAuthenticated) {
+        loginForm.style.display = 'none';
+        adminPanel.style.display = 'block';
+        adminUser.textContent = authData.username || 'admin';
+        // Show admin-only functions
+        if (registerBtn) registerBtn.style.display = 'inline-block';
+        if (deleteBtn && currentWordId) deleteBtn.style.display = 'inline-block';
+    } else {
+        loginForm.style.display = 'block';
+        adminPanel.style.display = 'none';
+        // Hide admin-only functions for non-authenticated users
+        if (registerBtn) registerBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     await loadDictionary();
+    await checkAuthStatus();
     const wordInput = document.getElementById('wordInput');
     const searchBtn = document.getElementById('searchBtn');
     const clearBtn = document.getElementById('clearBtn');
@@ -50,8 +91,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Tab elements
     const searchTab = document.getElementById('searchTab');
     const registerTab = document.getElementById('registerTab');
+    const adminTab = document.getElementById('adminTab');
     const searchSection = document.getElementById('searchSection');
     const registerSection = document.getElementById('registerSection');
+    const adminSection = document.getElementById('adminSection');
     
     // Registration form elements
     const newWord = document.getElementById('newWord');
@@ -60,6 +103,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     const newExample = document.getElementById('newExample');
     const registerBtn = document.getElementById('registerBtn');
     const clearFormBtn = document.getElementById('clearFormBtn');
+
+    // Admin form elements
+    const adminUsername = document.getElementById('adminUsername');
+    const adminPassword = document.getElementById('adminPassword');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const quickLoginBtn = document.getElementById('quickLoginBtn');
 
     function searchWord() {
         const word = wordInput.value.trim();
@@ -86,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Store the current word ID for deletion
         currentWordId = result.id;
-        deleteBtn.style.display = result.id ? 'inline-block' : 'none';
+        deleteBtn.style.display = (result.id && isAuthenticated) ? 'inline-block' : 'none';
 
         resultSection.style.display = 'block';
         noResult.style.display = 'none';
@@ -111,15 +161,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         wordInput.focus();
     }
 
-    function switchTab(activeTab, activeSection, inactiveTab, inactiveSection) {
-        activeTab.classList.add('active');
-        inactiveTab.classList.remove('active');
-        activeSection.style.display = 'block';
-        inactiveSection.style.display = 'none';
-        
+    function switchTab(activeTab, activeSection, ...inactiveTabs) {
+        // Remove active class from all tabs
+        [searchTab, registerTab, adminTab].forEach(tab => {
+            if (tab) tab.classList.remove('active');
+        });
+
+        // Hide all sections
+        [searchSection, registerSection, adminSection].forEach(section => {
+            if (section) section.style.display = 'none';
+        });
+
+        // Activate selected tab and section
+        if (activeTab) activeTab.classList.add('active');
+        if (activeSection) activeSection.style.display = 'block';
+
         // Clear results when switching tabs
-        resultSection.style.display = 'none';
-        noResult.style.display = 'none';
+        if (resultSection) resultSection.style.display = 'none';
+        if (noResult) noResult.style.display = 'none';
     }
 
     async function registerWord() {
@@ -172,6 +231,65 @@ document.addEventListener('DOMContentLoaded', async function() {
         newWord.focus();
     }
 
+    function quickLogin() {
+        adminUsername.value = 'admin';
+        adminPassword.value = 'secret';
+        loginUser();
+    }
+
+    async function loginUser() {
+        const username = adminUsername.value.trim();
+        const password = adminPassword.value.trim();
+
+        if (!username || !password) {
+            alert('ユーザー名とパスワードを入力してください。');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('ログインしました。');
+                adminUsername.value = '';
+                adminPassword.value = '';
+                await checkAuthStatus();
+            } else {
+                const error = await response.json();
+                alert(`ログインに失敗しました: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('ログイン中にエラーが発生しました。');
+        }
+    }
+
+    async function logoutUser() {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+            });
+
+            if (response.ok) {
+                alert('ログアウトしました。');
+                await checkAuthStatus();
+                switchTab(searchTab, searchSection);
+            } else {
+                alert('ログアウト中にエラーが発生しました。');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('ログアウト中にエラーが発生しました。');
+        }
+    }
+
     async function deleteWord() {
         if (!currentWordId) {
             alert('削除する単語が選択されていません。');
@@ -205,11 +323,20 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Tab event listeners
     searchTab.addEventListener('click', () => {
-        switchTab(searchTab, searchSection, registerTab, registerSection);
+        switchTab(searchTab, searchSection);
     });
 
     registerTab.addEventListener('click', () => {
-        switchTab(registerTab, registerSection, searchTab, searchSection);
+        if (!isAuthenticated) {
+            alert('単語登録には管理者ログインが必要です。');
+            switchTab(adminTab, adminSection);
+            return;
+        }
+        switchTab(registerTab, registerSection);
+    });
+
+    adminTab.addEventListener('click', () => {
+        switchTab(adminTab, adminSection);
     });
 
     // Search functionality event listeners
@@ -233,6 +360,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     registerBtn.addEventListener('click', registerWord);
     clearFormBtn.addEventListener('click', clearRegistrationForm);
     deleteBtn.addEventListener('click', deleteWord);
+
+    // Admin functionality event listeners
+    loginBtn.addEventListener('click', loginUser);
+    logoutBtn.addEventListener('click', logoutUser);
+    quickLoginBtn.addEventListener('click', quickLogin);
+
+    // Enter key support for login
+    adminPassword.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            loginUser();
+        }
+    });
 
     newExample.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && e.ctrlKey) {

@@ -3,14 +3,40 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Admin credentials (in production, store these securely)
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD_HASH = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // password: secret
+
+// Authentication middleware
+function requireAuth(req, res, next) {
+    if (req.session.isAuthenticated) {
+        next();
+    } else {
+        res.status(401).json({ error: 'Authentication required' });
+    }
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
+
+// Session middleware
+app.use(session({
+    secret: 'kansai-dict-secret-key-2024',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Set to true in production with HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // 24 hours
+    }
+}));
 
 // Database setup
 const DB_PATH = './dictionary.db';
@@ -86,6 +112,46 @@ function migrateDictionaryData() {
     });
 }
 
+// Authentication Routes
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    if (username === ADMIN_USERNAME) {
+        const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+        if (isValidPassword) {
+            req.session.isAuthenticated = true;
+            req.session.username = username;
+            return res.json({ success: true, message: 'Login successful' });
+        }
+    }
+
+    res.status(401).json({ error: 'Invalid credentials' });
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Could not log out' });
+        }
+        res.json({ success: true, message: 'Logout successful' });
+    });
+});
+
+// Check authentication status
+app.get('/api/auth/status', (req, res) => {
+    res.json({
+        isAuthenticated: !!req.session.isAuthenticated,
+        username: req.session.username || null
+    });
+});
+
 // API Routes
 
 // Get all words
@@ -113,8 +179,8 @@ app.get('/api/words/:word', (req, res) => {
     });
 });
 
-// Add a new word
-app.post('/api/words', (req, res) => {
+// Add a new word (protected route)
+app.post('/api/words', requireAuth, (req, res) => {
     const { word, accent, pronunciation, example } = req.body;
     
     if (!word || !accent || !pronunciation || !example) {
@@ -134,8 +200,8 @@ app.post('/api/words', (req, res) => {
     );
 });
 
-// Update a word
-app.put('/api/words/:id', (req, res) => {
+// Update a word (protected route)
+app.put('/api/words/:id', requireAuth, (req, res) => {
     const { word, accent, pronunciation, example } = req.body;
     const id = req.params.id;
     
@@ -154,8 +220,8 @@ app.put('/api/words/:id', (req, res) => {
     );
 });
 
-// Delete a word
-app.delete('/api/words/:id', (req, res) => {
+// Delete a word (protected route)
+app.delete('/api/words/:id', requireAuth, (req, res) => {
     const id = req.params.id;
     
     db.run("DELETE FROM words WHERE id = ?", [id], function(err) {
