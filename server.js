@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Admin credentials (in production, store these securely)
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD_HASH = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // password: secret
+const ADMIN_PASSWORD_HASH = '$2b$10$Qw7xlN2JPaWY3AQVWcfZq.qMyLepBrnTvzdR7hmN/4bC//I9KqXzK'; // password: secret
 
 // Authentication middleware
 function requireAuth(req, res, next) {
