@@ -115,6 +115,7 @@
                             <div id="example" class="example-display"></div>
                         </div>
                         <div class="word-actions">
+                            <button id="editBtn" class="edit-btn" style="display: none;">編集</button>
                             <button id="deleteBtn" class="delete-btn" style="display: none;">削除</button>
                         </div>
                     </div>
@@ -126,6 +127,38 @@
                 <p>別の単語を試してみてください。</p>
             </div>
         </main>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>単語を編集</h3>
+                    <span class="close-btn" id="closeEditModal">&times;</span>
+                </div>
+                <div class="edit-form">
+                    <div class="form-group">
+                        <label for="editWord">単語</label>
+                        <input type="text" id="editWord" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAccent">関西弁アクセント</label>
+                        <input type="text" id="editAccent" placeholder="アクセント記号を含めて入力（例：こん↗に↘ちは）" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPronunciation">発音</label>
+                        <input type="text" id="editPronunciation" placeholder="読み方を入力（例：こんにちわ）" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editExample">使用例</label>
+                        <textarea id="editExample" placeholder="使用例を入力してください" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button id="saveEditBtn" class="save-btn">保存</button>
+                        <button id="cancelEditBtn" class="cancel-btn">キャンセル</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

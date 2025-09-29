@@ -111,6 +111,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     const logoutBtn = document.getElementById('logoutBtn');
     const quickLoginBtn = document.getElementById('quickLoginBtn');
 
+    // Edit modal elements
+    const editBtn = document.getElementById('editBtn');
+    const editModal = document.getElementById('editModal');
+    const closeEditModal = document.getElementById('closeEditModal');
+    const editWord = document.getElementById('editWord');
+    const editAccent = document.getElementById('editAccent');
+    const editPronunciation = document.getElementById('editPronunciation');
+    const editExample = document.getElementById('editExample');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
     function searchWord() {
         const word = wordInput.value.trim();
         
@@ -134,8 +145,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         pronunciation.textContent = result.pronunciation;
         example.textContent = result.example;
 
-        // Store the current word ID for deletion
+        // Store the current word ID for deletion and editing
         currentWordId = result.id;
+        editBtn.style.display = (result.id && isAuthenticated) ? 'inline-block' : 'none';
         deleteBtn.style.display = (result.id && isAuthenticated) ? 'inline-block' : 'none';
 
         resultSection.style.display = 'block';
@@ -156,6 +168,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         wordInput.value = '';
         resultSection.style.display = 'none';
         noResult.style.display = 'none';
+        editBtn.style.display = 'none';
         deleteBtn.style.display = 'none';
         currentWordId = null;
         wordInput.focus();
@@ -321,6 +334,84 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    function openEditModal() {
+        if (!currentWordId) {
+            alert('編集する単語が選択されていません。');
+            return;
+        }
+
+        const wordToEdit = searchedWord.textContent;
+        const wordData = dictionary[wordToEdit];
+
+        if (!wordData) {
+            alert('単語データが見つかりません。');
+            return;
+        }
+
+        editWord.value = wordToEdit;
+        editAccent.value = wordData.accent;
+        editPronunciation.value = wordData.pronunciation;
+        editExample.value = wordData.example;
+
+        editModal.style.display = 'flex';
+    }
+
+    function closeEditModalFunc() {
+        editModal.style.display = 'none';
+        editWord.value = '';
+        editAccent.value = '';
+        editPronunciation.value = '';
+        editExample.value = '';
+    }
+
+    async function saveEditedWord() {
+        const word = editWord.value.trim();
+        const accent = editAccent.value.trim();
+        const pronunciationValue = editPronunciation.value.trim();
+        const exampleValue = editExample.value.trim();
+
+        if (!word || !accent || !pronunciationValue || !exampleValue) {
+            alert('すべての項目を入力してください。');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/words/${currentWordId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    word: word,
+                    accent: accent,
+                    pronunciation: pronunciationValue,
+                    example: exampleValue
+                }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(`単語「${word}」を更新しました。`);
+                closeEditModalFunc();
+
+                // Reload dictionary to include updated word
+                await loadDictionary();
+
+                // Refresh the display with updated data
+                const updatedWordData = dictionary[word];
+                if (updatedWordData) {
+                    displayResult(word, updatedWordData);
+                }
+            } else {
+                const error = await response.json();
+                alert(`更新に失敗しました: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Update error:', error);
+            alert('更新中にエラーが発生しました。');
+        }
+    }
+
     // Tab event listeners
     searchTab.addEventListener('click', () => {
         switchTab(searchTab, searchSection);
@@ -360,6 +451,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     registerBtn.addEventListener('click', registerWord);
     clearFormBtn.addEventListener('click', clearRegistrationForm);
     deleteBtn.addEventListener('click', deleteWord);
+
+    // Edit functionality event listeners
+    editBtn.addEventListener('click', openEditModal);
+    closeEditModal.addEventListener('click', closeEditModalFunc);
+    cancelEditBtn.addEventListener('click', closeEditModalFunc);
+    saveEditBtn.addEventListener('click', saveEditedWord);
+
+    // Close modal when clicking outside of it
+    editModal.addEventListener('click', function(e) {
+        if (e.target === editModal) {
+            closeEditModalFunc();
+        }
+    });
 
     // Admin functionality event listeners
     loginBtn.addEventListener('click', loginUser);
