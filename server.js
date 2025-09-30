@@ -76,7 +76,7 @@ function initializeDatabase() {
 // Migrate data from dictionary.json to SQLite
 function migrateDictionaryData() {
     // Check if data already exists
-    db.get("SELECT COUNT(*) as count FROM words", (err, row) => {
+    db.get('SELECT COUNT(*) as count FROM words', (err, row) => {
         if (err) {
             console.error('Error checking data:', err);
             return;
@@ -91,7 +91,7 @@ function migrateDictionaryData() {
         if (fs.existsSync('./dictionary.json')) {
             const dictionaryData = JSON.parse(fs.readFileSync('./dictionary.json', 'utf8'));
             
-            const stmt = db.prepare("INSERT INTO words (word, accent, pronunciation, example) VALUES (?, ?, ?, ?)");
+            const stmt = db.prepare('INSERT INTO words (word, accent, pronunciation, example) VALUES (?, ?, ?, ?)');
             
             Object.entries(dictionaryData).forEach(([word, data]) => {
                 stmt.run(word, data.accent, data.pronunciation, data.example, (err) => {
@@ -156,7 +156,7 @@ app.get('/api/auth/status', (req, res) => {
 
 // Get all words
 app.get('/api/words', (req, res) => {
-    db.all("SELECT * FROM words ORDER BY word", (err, rows) => {
+    db.all('SELECT * FROM words ORDER BY word', (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -168,7 +168,7 @@ app.get('/api/words', (req, res) => {
 // Get a specific word
 app.get('/api/words/:word', (req, res) => {
     const word = req.params.word;
-    db.get("SELECT * FROM words WHERE word = ?", [word], (err, row) => {
+    db.get('SELECT * FROM words WHERE word = ?', [word], (err, row) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else if (row) {
@@ -188,7 +188,7 @@ app.post('/api/words', requireAuth, (req, res) => {
     }
     
     db.run(
-        "INSERT INTO words (word, accent, pronunciation, example) VALUES (?, ?, ?, ?)",
+        'INSERT INTO words (word, accent, pronunciation, example) VALUES (?, ?, ?, ?)',
         [word, accent, pronunciation, example],
         function(err) {
             if (err) {
@@ -206,7 +206,7 @@ app.put('/api/words/:id', requireAuth, (req, res) => {
     const id = req.params.id;
     
     db.run(
-        "UPDATE words SET word = ?, accent = ?, pronunciation = ?, example = ? WHERE id = ?",
+        'UPDATE words SET word = ?, accent = ?, pronunciation = ?, example = ? WHERE id = ?',
         [word, accent, pronunciation, example, id],
         function(err) {
             if (err) {
@@ -224,7 +224,7 @@ app.put('/api/words/:id', requireAuth, (req, res) => {
 app.delete('/api/words/:id', requireAuth, (req, res) => {
     const id = req.params.id;
     
-    db.run("DELETE FROM words WHERE id = ?", [id], function(err) {
+    db.run('DELETE FROM words WHERE id = ?', [id], function(err) {
         if (err) {
             res.status(500).json({ error: err.message });
         } else if (this.changes === 0) {
