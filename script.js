@@ -470,6 +470,141 @@ document.addEventListener('DOMContentLoaded', async function() {
     logoutBtn.addEventListener('click', logoutUser);
     quickLoginBtn.addEventListener('click', quickLogin);
 
+    // Word list functionality
+    const loadWordsBtn = document.getElementById('loadWordsBtn');
+    const wordListContainer = document.getElementById('wordListContainer');
+    const wordListBody = document.getElementById('wordListBody');
+    const filterInput = document.getElementById('filterInput');
+
+    let allWords = [];
+
+    async function loadWordList() {
+        try {
+            const response = await fetch('/api/words');
+            if (response.ok) {
+                allWords = await response.json();
+                displayWordList(allWords);
+                wordListContainer.style.display = 'block';
+                filterInput.style.display = 'block';
+                loadWordsBtn.textContent = '一覧を更新';
+            } else {
+                alert('単語一覧の取得に失敗しました。');
+            }
+        } catch (error) {
+            console.error('Word list load error:', error);
+            alert('単語一覧の読み込み中にエラーが発生しました。');
+        }
+    }
+
+    function displayWordList(words) {
+        wordListBody.innerHTML = '';
+
+        if (words.length === 0) {
+            wordListBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">単語が登録されていません。</td></tr>';
+            return;
+        }
+
+        words.forEach(word => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${word.word}</td>
+                <td>${word.accent}</td>
+                <td>${word.pronunciation}</td>
+                <td class="example-cell">${word.example}</td>
+                <td>
+                    <button class="edit-word-btn" data-id="${word.id}">編集</button>
+                    <button class="delete-word-btn" data-id="${word.id}">削除</button>
+                </td>
+            `;
+            wordListBody.appendChild(row);
+        });
+
+        // Add event listeners to edit and delete buttons
+        document.querySelectorAll('.edit-word-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const wordId = this.getAttribute('data-id');
+                editWordFromList(wordId);
+            });
+        });
+
+        document.querySelectorAll('.delete-word-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const wordId = this.getAttribute('data-id');
+                deleteWordFromList(wordId);
+            });
+        });
+    }
+
+    function filterWordList() {
+        const filterValue = filterInput.value.trim().toLowerCase();
+        if (!filterValue) {
+            displayWordList(allWords);
+            return;
+        }
+
+        const filteredWords = allWords.filter(word =>
+            word.word.toLowerCase().includes(filterValue)
+        );
+        displayWordList(filteredWords);
+    }
+
+    async function editWordFromList(wordId) {
+        const word = allWords.find(w => w.id == wordId);
+        if (!word) {
+            alert('単語が見つかりません。');
+            return;
+        }
+
+        currentWordId = word.id;
+        editWord.value = word.word;
+        editAccent.value = word.accent;
+        editPronunciation.value = word.pronunciation;
+        editExample.value = word.example;
+        editModal.style.display = 'flex';
+    }
+
+    async function deleteWordFromList(wordId) {
+        const word = allWords.find(w => w.id == wordId);
+        if (!word) {
+            alert('単語が見つかりません。');
+            return;
+        }
+
+        if (!confirm(`本当に「${word.word}」を削除しますか？\nこの操作は取り消すことができません。`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/words/${wordId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert(`単語「${word.word}」を削除しました。`);
+                await loadDictionary();
+                await loadWordList(); // Refresh the list
+            } else {
+                const error = await response.json();
+                alert(`削除に失敗しました: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('削除中にエラーが発生しました。');
+        }
+    }
+
+    loadWordsBtn.addEventListener('click', loadWordList);
+    filterInput.addEventListener('input', filterWordList);
+
+    // Update saveEditedWord to refresh word list after editing
+    const originalSaveEditedWord = saveEditedWord;
+    saveEditedWord = async function() {
+        await originalSaveEditedWord();
+        if (wordListContainer.style.display === 'block') {
+            await loadWordList();
+        }
+    };
+
     // Enter key support for login
     adminPassword.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

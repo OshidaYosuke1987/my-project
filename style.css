@@ -698,3 +698,170 @@ main {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
 }
+
+/* Word List Styles */
+.word-list-section {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #28a745;
+}
+
+.word-list-section h3 {
+    color: #155724;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.word-list-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.load-words-btn {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.load-words-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+}
+
+#filterInput {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 1em;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#filterInput:focus {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+#wordListContainer {
+    overflow-x: auto;
+}
+
+.word-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.word-list-table thead {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.word-list-table th {
+    padding: 15px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.word-list-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9em;
+}
+
+.word-list-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.word-list-table tbody tr:hover {
+    background-color: #f8f9ff;
+}
+
+.word-list-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.example-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edit-word-btn,
+.delete-word-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 5px;
+}
+
+.edit-word-btn {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+    color: white;
+}
+
+.edit-word-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+}
+
+.delete-word-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.delete-word-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+}
+
+@media (max-width: 768px) {
+    .word-list-controls {
+        flex-direction: column;
+    }
+
+    #filterInput {
+        width: 100%;
+    }
+
+    .word-list-table {
+        font-size: 0.85em;
+    }
+
+    .word-list-table th,
+    .word-list-table td {
+        padding: 8px 5px;
+    }
+
+    .example-cell {
+        max-width: 120px;
+    }
+
+    .edit-word-btn,
+    .delete-word-btn {
+        padding: 5px 10px;
+        font-size: 0.8em;
+        margin-bottom: 5px;
+    }
+}

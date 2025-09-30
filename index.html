@@ -94,6 +94,28 @@
                             <p>📝 単語の登録・削除が可能です</p>
                             <p>🔒 ログアウト後は通常ユーザーモードに戻ります</p>
                         </div>
+                        <div class="word-list-section">
+                            <h3>登録済み単語一覧</h3>
+                            <div class="word-list-controls">
+                                <button id="loadWordsBtn" class="load-words-btn">一覧を表示</button>
+                                <input type="text" id="filterInput" placeholder="単語で絞り込み..." style="display: none;">
+                            </div>
+                            <div id="wordListContainer" style="display: none;">
+                                <table id="wordListTable" class="word-list-table">
+                                    <thead>
+                                        <tr>
+                                            <th>単語</th>
+                                            <th>アクセント</th>
+                                            <th>発音</th>
+                                            <th>使用例</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="wordListBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
